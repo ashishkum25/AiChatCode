@@ -20,6 +20,9 @@ module.exports.registerUser =  async (req, res) => {
     });
     
     let token = jwt.sign({email: createdUser.email}, process.env.JWT_SECRET, {expiresIn: '24h'});
+
+    delete createdUser._doc.password; //Frontend pe password nhi bhejne ke liye yeh karna parta hai
+
     res.status(201).json({
         message: "User Created Successfully!",
         success: true,
@@ -48,6 +51,8 @@ module.exports.loginUser = async (req, res) => {
     }
 
     let token = jwt.sign({email: user.email}, process.env.JWT_SECRET, {expiresIn: '24h'});
+
+    delete user._doc.password; //Frontend pe password nhi bhejne ke liye yeh karna parta hai
 
     res.status(201).json({
         message: "Logged In Successfully!",
@@ -85,5 +90,18 @@ module.exports.logoutUser = async (req, res) => {
     } catch (err) {
         console.log(err);
         res.status(400).send(err.message);
+    }
+};
+
+module.exports.getAllUsersController = async (req, res) => {
+    try {
+        const loggedInUser = await userModel.findOne({ email: req.user.email });
+        const allUsers = await userModel.find({ _id: { $ne: loggedInUser._id  } });//$ne means not equal to the loggedIn User
+
+        return res.status(200).json({ users: allUsers });
+
+    } catch (err) {
+        console.log(err)
+        res.status(400).json({ error: err.message })
     }
 };
