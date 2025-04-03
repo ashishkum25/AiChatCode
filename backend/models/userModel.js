@@ -3,12 +3,12 @@ const mongoose = require('mongoose');
 const userSchema = mongoose.Schema({
     email: {
         type: String,
-        required: true,
+        minlength: [6, "Username must be at least 3 characters long"],
+        maxlength: [30, "Username must be at most 30 characters long"],
         trim: true,
         lowercase: true,
         unique: true,
-        minlength: [6, "Username must be at least 3 characters long"],
-        maxlength: [30, "Username must be at most 30 characters long"]
+        required: true
     },
     password: {
         type: String,

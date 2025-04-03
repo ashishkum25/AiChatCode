@@ -30,14 +30,4 @@ router.get('/get-project/:projectId',
 );
 
 
-
-
-
-
-
-
-
-
-
-
 module.exports = router;
