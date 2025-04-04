@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from 'react'
-import { UserContext } from '../context/user.context'
+import { UserContext } from '../context/UserContext'
 import { useNavigate, useLocation } from 'react-router-dom'
 import axios from '../config/axios'
 import { initializeSocket, receiveMessage, sendMessage } from '../config/socket'
@@ -21,7 +21,7 @@ function SyntaxHighlightedCode(props) {
     }, [ props.className, props.children ])
 
     return <code {...props} ref={ref} />
-}
+};
 
 
 const Project = () => {
@@ -74,24 +74,18 @@ const Project = () => {
     };
 
     const send = () => {
-
         sendMessage('project-message', {
             message,
             sender: user
         })
         setMessages(prevMessages => [ ...prevMessages, { sender: user, message } ]) // Update messages state
         setMessage("")
-
     }
 
     function WriteAiMessage(message) {
-
         const messageObject = JSON.parse(message)
-
         return (
-            <div
-                className='overflow-auto bg-slate-950 text-white rounded-sm p-2'
-            >
+            <div className='overflow-auto bg-slate-950 text-white rounded-sm p-2' >
                 <Markdown
                     children={messageObject.text}
                     options={{
@@ -101,7 +95,7 @@ const Project = () => {
                     }}
                 />
             </div>)
-    }
+    };
 
     useEffect(() => {
 
@@ -114,13 +108,9 @@ const Project = () => {
             })
         }
 
-
         receiveMessage('project-message', data => {
-
             console.log(data)
-            
             if (data.sender._id == 'ai') {
-
 
                 const message = JSON.parse(data.message)
 
@@ -133,8 +123,6 @@ const Project = () => {
                 }
                 setMessages(prevMessages => [ ...prevMessages, data ]) // Update messages state
             } else {
-
-
                 setMessages(prevMessages => [ ...prevMessages, data ]) // Update messages state
             }
         })

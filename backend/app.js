@@ -9,6 +9,7 @@ app.use(cors());
 
 const userRouter = require('./routes/userRouter.js'); 
 const projectRouter = require('./routes/projectRouter.js');
+const aiRouter = require('./routes/aiRoutes.js');
 
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
@@ -19,5 +20,6 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/users',userRouter);
 app.use('/projects',projectRouter);
+app.use('/ai', aiRouter);
 
 module.exports = app;
