@@ -1,42 +1,54 @@
 const jwt = require('jsonwebtoken');
-const userModel = require('../models/userModel.js'); // Added this import
+const userModel = require('../models/userModel.js');
 const redisClient = require('../services/redisService.js');
 
 module.exports.authUser = async (req, res, next) => {
     try {
-        const token = req.cookies.token || req.headers.authorization.split(' ')[1];
+        // Get token from cookies or Authorization header
+        const token = req.cookies.token || (req.headers.authorization && req.headers.authorization.split(' ')[1]);
+        
         if (!token) {
-            return res.status(401).json({ message: 'Unauthorized User' });
+            return res.status(401).json({ message: 'Authentication required' });
         }
 
-        // CHANGE HERE: Check the actual token value in Redis, not the string 'token'
+        // Check if token is blacklisted in Redis
         const isBlackListed = await redisClient.get(token); 
         if (isBlackListed) {
-            res.cookie('token', '');
-            return res.status(401).json({ message: 'Unauthorized User' });
+            // Clear cookie if present
+            if (req.cookies.token) {
+                res.clearCookie('token');
+            }
+            return res.status(401).json({ message: 'Token expired, please login again' });
         }
 
         try {
+            // Verify token
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             
-            // CHANGE HERE: Get the full user object from database
+            // Get the full user object from database
             const user = await userModel.findOne({ email: decoded.email });
             
             if (!user) {
                 return res.status(401).json({ message: 'User not found' });
             }
             
-            // CHANGE HERE: Set the actual user object, not just decoded token
+            // Store user and token in request for future use
             req.user = user;
-            
-            // CHANGE HERE: Store token in request for logout functionality
             req.token = token;
             
             next();
         } catch (error) {
-            return res.status(401).json({ message: 'Unauthorized User' });
+            // Handle specific JWT errors
+            if (error.name === 'TokenExpiredError') {
+                return res.status(401).json({ message: 'Token expired, please login again' });
+            } else if (error.name === 'JsonWebTokenError') {
+                return res.status(401).json({ message: 'Invalid token' });
+            }
+            
+            return res.status(401).json({ message: 'Authentication failed' });
         }
     } catch (error) {
-        return res.status(401).json({ message: 'Unauthorized User' });
+        console.error('Auth middleware error:', error);
+        return res.status(500).json({ message: 'Internal server error' });
     }
 };
