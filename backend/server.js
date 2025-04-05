@@ -6,7 +6,7 @@ const SocketIO = require('socket.io');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const projectModel = require('./models/projectModel.js');
-const generateResult = require('./services/aiService.js');
+const aiService = require('./services/aiService.js');
 
 
 const server = http.createServer(app);
@@ -64,7 +64,8 @@ io.on('connection', socket => {
 
           const prompt = message.replace('@ai', '');
 
-          const result = await generateResult(prompt);
+          // Use the generateResult method from aiService module
+          const result = await aiService.generateResult(prompt);
 
           io.to(socket.roomId).emit('project-message', {
               message: result,
